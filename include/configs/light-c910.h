@@ -440,7 +440,9 @@
 	"load_c906_audio=if test -e mmc 1:1 light_c906_audio.bin; then load mmc 1:1 $fwaddr light_c906_audio.bin; else load mmc 0:2 $fwaddr llight_c906_audio.bin; fi; cp.b $fwaddr $audio_ram_addr $filesize\0" \
 	"load_opensbi=if test -e mmc 1:1 fw_dynamic.bin; then load mmc 1:1 $opensbi_addr fw_dynamic.bin; else load mmc 0:2 $opensbi_addr fw_dynamic.bin; fi;\0" \
 	"fw_init=run load_aon; run load_c906_audio; run load_opensbi\0" \
-	"bootcmd=run env_import; run fw_init; bootslave; load mmc 1:1 $fdt_addr_r ${fdt_file}; load mmc 1:1 $kernel_addr_r ${kernel_file}; booti $kernel_addr_r - $fdt_addr_r;\0" \
+	"load_fdt=if test -e mmc 1:1 ${fdt_file}; then load mmc 1:1 $fdt_addr_r ${fdt_file}; else load mmc 0:2 $fdt_addr_r ${fdt_file}; fi;\0" \
+	"load_kernel=if test -e mmc 1:1 ${kernel_file}; then load mmc 1:1 $kernel_addr_r ${kernel_file}; else load mmc 0:2 $kernel_addr_r ${kernel_file}; fi;\0" \
+	"bootcmd=run env_import; run fw_init; bootslave; run load_fdt; run load_kernel; booti $kernel_addr_r - $fdt_addr_r;\0" \
         "\0"
 	
 #elif defined (CONFIG_TARGET_LIGHT_FM_C910_A_REF)
