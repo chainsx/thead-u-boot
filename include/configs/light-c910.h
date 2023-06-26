@@ -116,6 +116,51 @@
 #define ENV_STR_BOOT_DELAY	"bootdelay=0\0"
 #endif
 
+/* First try to boot from SD (index 0), then eMMC (index 1) */
+#if CONFIG_IS_ENABLED(CMD_MMC)
+	#define BOOT_TARGET_MMC(func) \
+		func(MMC, mmc, 0) \
+		func(MMC, mmc, 1)
+#else
+	#define BOOT_TARGET_MMC(func)
+#endif
+
+#if CONFIG_IS_ENABLED(CMD_USB)
+	#define BOOT_TARGET_USB(func) func(USB, usb, 0)
+#else
+	#define BOOT_TARGET_USB(func)
+#endif
+
+#if CONFIG_IS_ENABLED(CMD_PXE)
+	#define BOOT_TARGET_PXE(func) func(PXE, pxe, na)
+#else
+	#define BOOT_TARGET_PXE(func)
+#endif
+
+#if CONFIG_IS_ENABLED(CMD_DHCP)
+	#define BOOT_TARGET_DHCP(func) func(DHCP, dhcp, na)
+#else
+	#define BOOT_TARGET_DHCP(func)
+#endif
+
+#define BOOT_TARGET_DEVICES(func) \
+	BOOT_TARGET_MMC(func) \
+	BOOT_TARGET_USB(func) \
+	BOOT_TARGET_PXE(func) \
+	BOOT_TARGET_DHCP(func)
+
+#define ENV_MEM_LAYOUT_SETTINGS \
+	"scriptaddr=0x00500000\0" \
+	"pxefile_addr_r=0x00600000\0" \
+	"fdt_addr_r=0x01f00000\0" \
+	"kernel_addr_r=0x00200000\0" \
+	"ramdisk_addr_r=0x06000000\0" \
+	"splashimage=0x30000000\0" \
+	"splashpos=m,m\0" \
+	"fdt_high=0xffffffffffffffff\0" \
+	"kernel_addr_r=0x00200000\0" \
+	"kdump_buf=500M\0"
+
 #if defined (CONFIG_LIGHT_SEC_BOOT_WITH_VERIFY_VAL_A)
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"splashimage=0x30000000\0" \
@@ -425,33 +470,11 @@
 	"factory_reset=yes\0"\
         "\0"
 #elif defined (CONFIG_TARGET_LIGHT_FM_C910_LPI4A)
+#include <config_distro_bootcmd.h>
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"splashimage=0x30000000\0" \
-	"splashpos=m,m\0" \
-	"fdt_high=0xffffffffffffffff\0" \
-	"opensbi_addr=0x0\0" \
-	"dtb_addr=0x01f00000\0" \
-	"kernel_addr=0x00200000\0" \
-	"aon_ram_addr=0xffffef8000\0" \
-	"audio_ram_addr=0xffc0000000\0" \
-	"fwaddr=0x10000000\0"\
-	"mmcdev=0\0" \
-	"boot_partition=bootA\0" \
-	"root_partition=rootfsA\0" \
-	"kdump_buf=500M\0" \
-	"findpart=rollback; if test ${boot_partition} = bootB; then mmcbootpart=4; else mmcbootpart=2; fi; if test ${root_partition} = rootfsB; then mmcpart=5; else mmcpart=3; fi;\0" \
-	"fdt_file=light-lpi4a.dtb\0" \
-	"uuid_rootfsA=80a5a8e9-c744-491a-93c1-4f4194fd690a\0" \
-	"uuid_rootfsB=80a5a8e9-c744-491a-93c1-4f4194fd690b\0" \
-	"partitions=name=table,size=2031KB;name=boot,size=500MiB,type=boot;name=root,size=6000MiB,type=linux,uuid=${uuid_rootfsA}\0" \
-	"finduuid=part uuid mmc ${mmcdev}:${mmcpart} uuid\0" \
-	"gpt_partition=gpt write mmc ${mmcdev} $partitions\0" \
-	"set_bootargs=setenv bootargs console=ttyS0,115200 root=PARTUUID=${uuid_rootfsA} rootfstype=ext4 rootwait rw earlycon clk_ignore_unused loglevel=7 eth=$ethaddr rootrwoptions=rw,noatime rootrwreset=${factory_reset} init=/lib/systemd/systemd\0" \
-	"load_aon=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_aon_fpga.bin;cp.b $fwaddr $aon_ram_addr $filesize\0"\
-	"load_c906_audio=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_c906_audio.bin;cp.b $fwaddr $audio_ram_addr $filesize\0"\
-	"bootcmd_load=run findpart;run load_aon;run load_c906_audio; ext4load mmc ${mmcdev}:${mmcbootpart} $opensbi_addr fw_dynamic.bin; ext4load mmc ${mmcdev}:${mmcbootpart} $dtb_addr ${fdt_file}; ext4load mmc ${mmcdev}:${mmcbootpart} $kernel_addr Image\0" \
-	"bootcmd=run bootcmd_load; bootslave; run finduuid; run set_bootargs; booti $kernel_addr - $dtb_addr;\0" \
-	"factory_reset=yes\0"\
+	ENV_MEM_LAYOUT_SETTINGS \
+	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	BOOTENV \
         "\0"
 #elif defined (CONFIG_TARGET_LIGHT_FM_C910_A_REF)
 #define CONFIG_EXTRA_ENV_SETTINGS \
