@@ -1923,11 +1923,11 @@ static void set_fixed_mac(void)
 static void do_firmware_load(void)
 {
 	printf("loading aon...\n");
-	run_command("if test -e mmc 1:2 light_aon_fpga.bin; then load mmc 1:2 0x10000000 light_aon_fpga.bin; else load mmc 0:2 0x10000000 light_aon_fpga.bin; fi; cp.b 0x10000000 0xffffef8000 $filesize", 0);
+	run_command("if test -e mmc 1:1 light_aon_fpga.bin; then load mmc 1:1 0x10000000 light_aon_fpga.bin; else load mmc 0:1 0x10000000 light_aon_fpga.bin; fi; cp.b 0x10000000 0xffffef8000 $filesize", 0);
 	printf("loading audio...\n");
-	run_command("if test -e mmc 1:2 light_c906_audio.bin; then load mmc 1:2 0x10000000 light_c906_audio.bin; else load mmc 0:2 0x10000000 llight_c906_audio.bin; fi; cp.b 0x10000000 0xffc0000000 $filesize", 0);
+	run_command("if test -e mmc 1:1 light_c906_audio.bin; then load mmc 1:1 0x10000000 light_c906_audio.bin; else load mmc 0:1 0x10000000 llight_c906_audio.bin; fi; cp.b 0x10000000 0xffc0000000 $filesize", 0);
 	printf("loading opensbi...\n");
-	run_command("if test -e mmc 1:2 fw_dynamic.bin; then load mmc 1:2 0x0 fw_dynamic.bin; else load mmc 0:2 0x0 fw_dynamic.bin; fi;", 0);
+	run_command("if test -e mmc 1:1 fw_dynamic.bin; then load mmc 1:1 0x0 fw_dynamic.bin; else load mmc 0:1 0x0 fw_dynamic.bin; fi;", 0);
 	printf("bootslave..");
 	run_command("bootslave", 0);
 }
