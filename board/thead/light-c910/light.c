@@ -1867,7 +1867,7 @@ static void light_usb_boot_check(void)
 		return;
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("usb_fastboot", "yes");
+	env_set("usb_mass_storage", "yes");
 #endif
 	/*Get this version ethaddr(mac addr) env,which follows one board, trans to next version env*/
 //	env_ethaddr_flag  = eth_env_get_enetaddr_by_index("eth", 0, env_enetaddr);
@@ -1890,8 +1890,8 @@ static void light_usb_boot_check(void)
 //	}
 
 	run_command("env save", 0);
-	run_command("run gpt_partition", 0);
-	run_command("fastboot usb 0", 0);
+//	run_command("run gpt_partition", 0);
+	run_command("ums 0 mmc 0", 0);
 }
 
 static void set_fixed_mac(void)
