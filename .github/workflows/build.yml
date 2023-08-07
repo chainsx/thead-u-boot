@@ -1,11 +1,9 @@
-name: thead-u-boot-build
+name: thead-u-boot-build-action
 
 on:
   push:
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *"
 
 env:
   xuetie_toolchain: https://occ-oss-prod.oss-cn-hangzhou.aliyuncs.com/resource//1663142514282

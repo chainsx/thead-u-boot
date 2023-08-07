@@ -132,16 +132,13 @@
 	"fdt_high=0xffffffffffffffff\0" \
 	"kernel_addr_r=0x00200000\0" \
 	"kdump_buf=180M\0" \
-	"mmcdev=0\0" \
-	"mmcbootpart=2\0" \
 	"boot_conf_file=/extlinux/extlinux.conf\0" \
-	"uuid_rootfsA=80a5a8e9-c744-491a-93c1-4f4194fd690a\0" \
-	"partitions=name=table,size=2031KB;name=boot,size=500MiB,type=boot;name=root,size=-,type=linux,uuid=${uuid_rootfsA}\0" \
-	"gpt_partition=gpt write mmc ${mmcdev} $partitions\0" \
-	"load_aon=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_aon_fpga.bin;cp.b $fwaddr $aon_ram_addr $filesize\0" \
-	"load_c906_audio=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_c906_audio.bin;cp.b $fwaddr $audio_ram_addr $filesize\0" \
-	"finduuid=part uuid mmc ${mmcdev}:${mmcpart} uuid\0" \
-	"bootcmd_load=run findpart;run load_aon;run load_c906_audio; ext4load mmc ${mmcdev}:${mmcbootpart} $opensbi_addr fw_dynamic.bin\0" \
+	"mmcbootpart=1\0" \
+	"default_mmcdev=1\0" \
+	"mmc_select=if test -e mmc ${default_mmcdev}:${mmcbootpart} ${boot_conf_file}; then mmcdev=1; else mmcdev=0; fi;\0" \
+	"load_aon=load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_aon_fpga.bin;cp.b $fwaddr $aon_ram_addr $filesize\0" \
+	"load_c906_audio=load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_c906_audio.bin;cp.b $fwaddr $audio_ram_addr $filesize\0" \
+	"bootcmd_load=run mmc_select;run load_aon;run load_c906_audio; load mmc ${mmcdev}:${mmcbootpart} $opensbi_addr fw_dynamic.bin\0" \
 	"bootcmd=run bootcmd_load; bootslave; sysboot mmc ${mmcdev}:${mmcbootpart} any $boot_conf_addr_r $boot_conf_file;\0" \
 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
 	"\0"
