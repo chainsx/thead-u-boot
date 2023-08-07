@@ -759,6 +759,28 @@ static void print_ruyisdk_logo(void)
 	printf("-----------------------------------------\n");
 }
 
+static void print_chuang_warning(void)
+{
+	//                              |/
+	//                             _/_
+	//    +-----------------+ ____  O
+	//    |                 ||    \
+	//    |                 ||     \     O     O
+	//    |   ___   RISC-V  ||  ___ |   /|\_  /|\_
+	//    +--/ o \----------++-/ o \+  _/ \  _/ \
+	//       \___/             \___/
+
+	printf("                              |/\n");
+	printf("                             _/_\n");
+	printf("    +-----------------+ ____  O\n");
+	printf("    |                 ||    \\\n");
+	printf("    |                 ||     \\     O     O\n");
+	printf("    |   ___   RISC-V  ||  ___ |   /|\\_  /|\\_\n");
+	printf("    +--/ o \\----------++-/ o \\+  _/ \\  _/ \\\n");
+	printf("       \\___/             \\___/\n");
+}
+
+
 #ifdef CONFIG_SPL_SERIAL_SUPPORT
 /*
  * This requires UART clocks to be enabled.  In order for this to work the
@@ -773,6 +795,7 @@ void preloader_console_init(void)
 	gd->have_console = 1;
 
 	print_ruyisdk_logo();
+	print_chuang_warning();
 
 #if CONFIG_IS_ENABLED(BANNER_PRINT)
 	puts("\nU-Boot " SPL_TPL_NAME " " PLAIN_VERSION " (" U_BOOT_DATE " - "
