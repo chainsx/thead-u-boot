@@ -1,0 +1,71 @@
+name: release
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare_release:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get time
+        id: time
+        uses: nanzm/get-time-action@v1.1
+        with:
+          format: 'YYYYMMDD-HHmm'
+      - name: Create empty release
+        id: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.time.outputs.time }}
+          body_path: VERSION
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_commitish: extlinux
+          draft: false
+    outputs:
+      release_id: ${{ steps.release.outputs.id }}
+  build:
+    runs-on: ubuntu-20.04
+    needs: prepare_release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Clean environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt update && \
+              sudo apt install -y gdisk dosfstools gcc-riscv64-linux-gnu build-essential \
+                                  libncurses-dev gawk flex bison openssl libssl-dev tree \
+                                  dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf device-tree-compiler
+      - name: Build
+        shell: bash
+        run: |
+          mkdir firmware
+          git clone --depth=1 https://github.com/chainsx/thead-u-boot.git -b extlinux
+          cd thead-u-boot
+          make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- light_lpi4a_defconfig
+          make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- -j$(nproc)
+          cp u-boot-with-spl.bin ../firmware/lpi4a-8gb-u-boot-with-spl.bin
+
+          make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- clean
+
+          make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- light_lpi4a_16g_defconfig
+          make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- -j$(nproc)
+          cp u-boot-with-spl.bin ../firmware/lpi4a-16gb-u-boot-with-spl.bin
+      - name: Upload
+        if: needs.prepare_release.outputs.release_id != ''
+        uses: xresloader/upload-to-github-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ needs.prepare_release.outputs.release_id }}
+          file: "./firmware/*u-boot-*.bin"
+          draft: false
+      - name: Rollback release
+        if: failure() && needs.prepare_release.outputs.release_id != ''
+        uses: author/action-rollback@stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ needs.prepare_release.outputs.release_id }}
