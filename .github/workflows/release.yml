@@ -1,4 +1,4 @@
-name: release
+name: thead-u-boot-build-action
 on:
   workflow_dispatch:
 
